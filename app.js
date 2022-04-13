@@ -2,6 +2,7 @@
 const express = require('express')
 // 创建express实例
 const app = express()
+const joi = require('joi')
 // 注册cors为全局中间件
 const cors = require('cors')
 app.use(cors())
@@ -32,6 +33,10 @@ app.use(expressJWT({ secret: config.jwtSecretKey }).unless({ path: [/^\/api/] })
 // 导入注册用户路由模块
 const userRouter = require('./router/user')
 app.use('/api', userRouter)
+
+// 导入用户信息路由模块\
+const userinfoRouter = require('./router/userinfo')
+app.use('/sys', userinfoRouter)
 
 // 定义错误级别的中间件
 app.use((err, req, res, next) => {
