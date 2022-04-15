@@ -81,12 +81,16 @@ exports.login = (req, res) => {
     })
     // 调用 res.send() 将 Token 响应给客户端
     res.send({
-      status: 2000,
-      code: 1000,
-      data: {
-        token: 'Bearer ' + tokenStr,
-      },
-      message: '登录成功！'
+      // status: 2000,
+      // code: 1000,
+      // data: {
+      //   token: 'Bearer ' + tokenStr,
+      // },
+      // message: '登录成功！'
+      status: 0,
+      message: '登录成功！',
+      // 为了方便客户端使用 Token，在服务器端直接拼接上 Bearer 的前缀
+      token: 'Bearer ' + tokenStr,
     })
   })
 }
