@@ -5,25 +5,86 @@ const bcrypt = require('bcryptjs')
 
 // 获取用户基本信息的处理函数
 exports.getUserInfo = (req, res) => {
-  // 根据用户的 id，查询用户的基本信息
-  const sql = `select id, username, nickname, email, user_pic from users where id=?`
-  // 注意：req 对象上的 user 属性，是 Token 解析成功，express-jwt 中间件帮我们挂载上去的
-  db.query(sql, req.user.id, (err, results) => {
-    // 1. 执行 SQL 语句失败
+  // 查询用户的基本信息
+  const sql = `select id, username, nickname, email, avatar from users limit ?, ?`
+  const page_num = req.query.page_num //当前的num
+  const page_size = req.query.page_size //当前页的数量
+
+  console.log(page_num, page_size)
+  if (page_num === undefined || page_size === undefined) {
+    const page_num = 1
+    const page_size = 6
+    const params = [
+      (parseInt(page_num) - 1) * parseInt(page_size),
+      parseInt(page_size),
+    ]
+    // 执行 SQL 语句，并传递参数
+    db.query(sql, params, (err, results) => {
+      // 1. 执行 SQL 语句失败
+      if (err) return res.cc(err)
+      // 查询总数
+      const sql = `select count(*) as total from users`
+      db.query(sql, (err, totalnum) => {
+        if (err) return res.cc(err)
+        const total = totalnum[0]['total'] // 获取总数
+        // 将用户信息响应给客户端
+        res.send({
+          status: 0,
+          message: '获取用户基本信息成功！',
+          data: {
+            page_num: page_num,
+            page_size: page_size,
+            total: total,
+            arr: results,
+          },
+        })
+      })
+    })
+  } else {
+    const params = [
+      (parseInt(page_num) - 1) * parseInt(page_size),
+      parseInt(page_size),
+    ]
+    // 执行 SQL 语句，并传递参数
+    db.query(sql, params, (err, results) => {
+      // 1. 执行 SQL 语句失败
+      if (err) return res.cc(err)
+      // 查询总数
+      const sql = `select count(*) as total from users`
+      db.query(sql, (err, totalnum) => {
+        if (err) return res.cc(err)
+        const total = totalnum[0]['total'] // 获取总数
+        // 将用户信息响应给客户端
+        res.send({
+          status: 0,
+          message: '获取用户基本信息成功！',
+          data: {
+            page_num: page_num,
+            page_size: page_size,
+            total: total,
+            arr: results,
+          },
+        })
+      })
+    })
+  }
+}
+
+// 根据删除用户
+exports.deleteUser = (req, res) => {
+  // 获取要删除的用户id
+  const id = req.body.id
+  // 删除用户
+  const sql = `delete from users where id = ?`
+  db.query(sql, [id], (err, results) => {
     if (err) return res.cc(err)
-
-    // 2. 执行 SQL 语句成功，但是查询到的数据条数不等于 1
-    if (results.length !== 1) return res.cc('获取用户信息失败！')
-
-    // 3. 将用户信息响应给客户端
+    if (results.affectedRows !== 1) return res.cc('删除用户失败！用户不存在！')
     res.send({
       status: 0,
-      data: results[0],
-      message: '获取用户基本信息成功！'
+      message: '删除用户成功！',
     })
   })
 }
-
 // 更新用户基本信息的处理函数
 exports.updateUserInfo = (req, res) => {
   // 定义待执行的 SQL 语句
@@ -38,6 +99,44 @@ exports.updateUserInfo = (req, res) => {
     res.cc('更新用户信息成功！', 0)
   })
 }
+// 新增用户
+exports.addUser = (req, res) => {
+  const userinfo = req.body
+  // 定义 SQL 语句，查询用户名是否被占用
+  const sqlStr = 'select * from users where username=?'
+  db.query(sqlStr, userinfo.username, (err, results) => {
+    // 执行 SQL 语句失败
+    if (err) {
+      // return res.send({ status: 1, message: err.message })
+      return res.cc(err)
+    }
+    // 判断用户名是否被占用
+    if (results.length > 0) {
+      // return res.send({ status: 1, message: '用户名被占用，请更换其他用户名！' })
+      return res.cc('用户名被占用，请更换其他用户名！')
+    }
+    // 调用 bcrypt.hashSync() 对密码进行加密
+    userinfo.password = bcrypt.hashSync(userinfo.password, 10)
+    // 定义插入新用户的 SQL 语句
+    const sql = 'insert into users set ?'
+    // 调用 db.query() 执行 SQL 语句
+    db.query(
+      sql,
+      { username: userinfo.username, password: userinfo.password },
+      (err, results) => {
+        // 判断 SQL 语句是否执行成功
+        if (err) return res.cc(err)
+        // 判断影响行数是否为 1
+        if (results.affectedRows !== 1)
+          return res.cc('新增用户失败，请稍后再试！')
+        // 注册用户成功
+        // res.send({ status: 0, message: '注册成功！' })
+        res.cc('新增用户成功！', 0)
+      },
+    )
+  })
+}
+
 // 重置密码的处理函数
 exports.updatePassword = (req, res) => {
   // 定义根据 id 查询用户数据的 SQL 语句

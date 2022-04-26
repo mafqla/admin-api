@@ -71,10 +71,10 @@ exports.login = (req, res) => {
       userinfo.password,
       results[0].password,
     )
-    if (!compareResult) return res.cc('登录失败！')
+    if (!compareResult) return res.cc('登录失败！密码错误！')
 
     // TODO：在服务器端生成 Token 的字符串
-    const user = { ...results[0], password: '', user_pic: '' }
+    const user = { ...results[0], password: '' }
     // 对用户的信息进行加密，生成 Token 字符串
     const tokenStr = jwt.sign(user, config.jwtSecretKey, {
       expiresIn: config.expiresIn,
@@ -89,8 +89,11 @@ exports.login = (req, res) => {
       // message: '登录成功！'
       status: 0,
       message: '登录成功！',
+      nickname: user.nickname,
+      username: user.username,
       // 为了方便客户端使用 Token，在服务器端直接拼接上 Bearer 的前缀
       token: 'Bearer ' + tokenStr,
+      avatar: user.avatar,
     })
   })
 }

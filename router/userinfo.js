@@ -12,10 +12,29 @@ const {
   update_userinfo_schema,
   update_password_schema,
   update_avatar_schema,
+  getUserInfo_schema,
+  deleteUser_schema,
+  addUserInfo_schema,
 } = require('../schema/user')
 
 // 获取用户的基本信息
-router.get('/userinfo', userinfo_handler.getUserInfo)
+router.get(
+  '/userinfo',
+  expressJoi(getUserInfo_schema),
+  userinfo_handler.getUserInfo,
+)
+// 根据id删除用户
+router.post(
+  '/deleteUser',
+  expressJoi(deleteUser_schema),
+  userinfo_handler.deleteUser,
+)
+// 增加用户信息
+router.post(
+  '/addUserInfo',
+  expressJoi(addUserInfo_schema),
+  userinfo_handler.addUser,
+)
 // 更新用户的基本信息
 router.post(
   '/update-userinfo',
@@ -25,14 +44,14 @@ router.post(
 router.post(
   '/updatepwd',
   expressJoi(update_password_schema),
-  userinfo_handler.updatePassword
+  userinfo_handler.updatePassword,
 )
 // 更新用户头像的路由
 router.post('/update/avatar', userinfo_handler.updateAvatar)
 router.post(
   '/update/avatar',
   expressJoi(update_avatar_schema),
-  userinfo_handler.updateAvatar
+  userinfo_handler.updateAvatar,
 )
 //向外共享路由对象
 module.exports = router

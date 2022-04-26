@@ -17,6 +17,9 @@ const email = joi.string().email().required()
 // data:image/png;base64,VE9PTUFOWVNFQ1JFVFM=
 const avatar = joi.string().dataUri().required()
 
+const page_num = joi.number().integer().min(1)
+const page_size = joi.number().integer().min(1)
+
 // 定义验证注册和登录表单数据的规则对象
 exports.reg_login_schema = {
   body: {
@@ -25,10 +28,32 @@ exports.reg_login_schema = {
   },
 }
 
+// 查询用户基本信息的规则对象
+exports.getUserInfo_schema = {
+  body: {
+    page_num,
+    page_size,
+  },
+}
+// 新增用户信息
+exports.addUserInfo_schema = {
+  body: {
+    username,
+    password,
+  },
+}
+// 根据id删除用户
+exports.deleteUser_schema = {
+  body: {
+    id,
+  },
+}
+
 // 验证规则对象 - 更新用户基本信息
 exports.update_userinfo_schema = {
   body: {
     id,
+    username,
     nickname,
     email,
   },

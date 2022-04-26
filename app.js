@@ -37,7 +37,7 @@ app.use('/api', userRouter)
 
 // 导入用户信息路由模块\
 const userinfoRouter = require('./router/userinfo')
-app.use('/my', userinfoRouter)
+app.use('/api', userinfoRouter)
 
 // 导入并使用文章分类路由模块
 const artCateRouter = require('./router/artcate')
